@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlgoTimer — Análisis de Complejidad Algorítmica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.07);
+    --border-accent: rgba(99,102,241,0.4);
+    --text: #e8e8f0;
+    --muted: #6b6b85;
+    --accent: #6366f1;
+    --accent2: #22d3ee;
+    --accent3: #f472b6;
+    --accent4: #fb923c;
+    --green: #4ade80;
+    --red: #f87171;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(99,102,241,0.06) 0%, transparent 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .logo-group { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), #818cf8);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 18px; font-weight: 700;
+    color: white;
+    box-shadow: 0 0 20px rgba(99,102,241,0.4);
+  }
+  .logo-text h1 {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(90deg, #a5b4fc, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .logo-text p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .badge-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .badge-py { border-color: rgba(251,191,36,0.4); color: #fbbf24; background: rgba(251,191,36,0.08); }
+  .badge-cpp { border-color: rgba(99,102,241,0.4); color: #818cf8; background: rgba(99,102,241,0.08); }
+  .badge-java { border-color: rgba(248,113,113,0.4); color: #f87171; background: rgba(248,113,113,0.08); }
+  .badge-js { border-color: rgba(250,204,21,0.4); color: #facc15; background: rgba(250,204,21,0.08); }
+
+  /* MAIN LAYOUT */
+  .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* CONTROLS */
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 700px) { .controls-grid { grid-template-columns: 1fr; } }
+  .control-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .control-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+  select, input[type=range] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  select:focus { border-color: var(--accent); }
+  input[type=range] {
+    padding: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin-top: 6px;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+  .n-display {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin-top: 8px;
+  }
+  .n-subtext { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .complexity-checks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .chk-item {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    transition: border-color 0.2s;
+    user-select: none;
+  }
+  .chk-item:hover { border-color: var(--border-accent); }
+  .chk-item input { display: none; }
+  .chk-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .chk-item span { font-family: var(--font-mono); font-size: 12px; }
+  .chk-item.active { border-color: var(--accent); background: rgba(99,102,241,0.1); }
+
+  /* RUN BUTTON */
+  .run-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--accent), #818cf8);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+  .run-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(99,102,241,0.45); }
+  .run-btn:active { transform: scale(0.99); }
+  .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .run-btn .btn-inner { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* METRICS GRID */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 700px) { .metrics-row { grid-template-columns: 1fr 1fr; } }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .metric-card.py::before { background: #fbbf24; }
+  .metric-card.cpp::before { background: var(--accent); }
+  .metric-card.java::before { background: var(--red); }
+  .metric-card.js::before { background: #facc15; }
+  .metric-lang { font-size: 11px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 4px; }
+  .metric-time {
+    font-size: 24px; font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text);
+    line-height: 1;
+  }
+  .metric-unit { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .metric-rank {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+  }
+  .metric-rank.first { background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+  /* CHART */
+  .chart-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .chart-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .chart-title { font-family: var(--font-mono); font-size: 13px; color: var(--text); font-weight: 700; }
+  .chart-legend { display: flex; gap: 16px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .chart-container { position: relative; width: 100%; height: 320px; }
+
+  /* TABLE */
+  .table-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  .td-mono { font-family: var(--font-mono); font-size: 12px; }
+  .td-lang { font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+  .bar-cell { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+  /* QR SECTION */
+  .qr-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 600px) { .qr-section { grid-template-columns: 1fr; justify-items: center; } }
+  .qr-box {
+    width: 148px; height: 148px;
+    background: white;
+    border-radius: 10px;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+  #qr-canvas { width: 100%; height: 100%; }
+  .qr-info h3 { font-family: var(--font-mono); font-size: 14px; margin-bottom: 8px; }
+  .qr-info p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 420px; }
+  .url-display {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent2);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 12px;
+    word-break: break-all;
+  }
+
+  /* COMPLEXITY INFO */
+  .complexity-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  @media (max-width: 600px) { .complexity-grid { grid-template-columns: 1fr; } }
+  .complexity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border-left: 3px solid;
+  }
+  .complexity-card h4 { font-family: var(--font-mono); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .complexity-card p { font-size: 13px; color: var(--muted); }
+  .complexity-card .growth { font-size: 11px; font-family: var(--font-mono); margin-top: 8px; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-group">
+      <div class="logo-icon">O()</div>
+      <div class="logo-text">
+        <h1>AlgoTimer</h1>
+        <p>Análisis de Complejidad Algorítmica</p>
+      </div>
+    </div>
+    <div class="badge-group">
+      <span class="badge badge-py">Python</span>
+      <span class="badge badge-cpp">C++</span>
+      <span class="badge badge-java">Java</span>
+      <span class="badge badge-js">JavaScript</span>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- SECTION: CONFIGURACIÓN -->
+  <div class="section-title">// Configuración del experimento</div>
+  <div class="controls-grid">
+
+    <div class="control-card">
+      <span class="control-label">Tamaño de entrada (n)</span>
+      <input type="range" id="nSlider" min="1" max="5" step="1" value="3">
+      <div class="n-display" id="nDisplay">1,000</div>
+      <div class="n-subtext" id="nSubtext">n = 10³ elementos</div>
+    </div>
+
+    <div class="control-card">
+      <span class="control-label">Complejidades a comparar</span>
+      <div class="complexity-checks" id="complexityChecks">
+        <label class="chk-item active" data-key="n2">
+          <input type="checkbox" checked>
+          <span class="chk-dot" style="background:#6366f1"></span>
+          <span>O(n²)</span>
+        </label>
+        <label class="chk-item active" data-key="nlogn">
+          <input type="checkbox" checked>
+          <span class="chk-dot" style="background:#22d3ee"></span>
+          <span>O(n log n)</span>
+        </label>
+        <label class="chk-item active" data-key="n3">
+          <input type="checkbox" checked>
+          <span class="chk-dot" style="background:#f472b6"></span>
+          <span>O(n³)</span>
+        </label>
+        <label class="chk-item" data-key="two_n">
+          <input type="checkbox">
+          <span class="chk-dot" style="background:#fb923c"></span>
+          <span>O(2ⁿ)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="control-card">
+      <span class="control-label">Modo de visualización</span>
+      <select id="viewMode">
+        <option value="bar">Gráfico de barras</option>
+        <option value="line">Líneas (escala de n)</option>
+        <option value="radar">Radar comparativo</option>
+      </select>
+      <div style="margin-top: 12px;">
+        <span class="control-label">Escala del eje Y</span>
+        <select id="scaleMode">
+          <option value="linear">Lineal</option>
+          <option value="logarithmic">Logarítmica</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="run-btn" id="runBtn" onclick="runSimulation()">
+    <div class="btn-inner">
+      <span>▶ EJECUTAR SIMULACIÓN</span>
+    </div>
+  </button>
+
+  <!-- METRICS -->
+  <div class="section-title">// Tiempos estimados de ejecución</div>
+  <div class="metrics-row" id="metricsRow">
+    <div class="metric-card py">
+      <div class="metric-lang">Python</div>
+      <div class="metric-time" id="m-py">—</div>
+      <div class="metric-unit">esperando...</div>
+    </div>
+    <div class="metric-card cpp">
+      <div class="metric-lang">C++</div>
+      <div class="metric-time" id="m-cpp">—</div>
+      <div class="metric-unit">esperando...</div>
+    </div>
+    <div class="metric-card java">
+      <div class="metric-lang">Java</div>
+      <div class="metric-time" id="m-java">—</div>
+      <div class="metric-unit">esperando...</div>
+    </div>
+    <div class="metric-card js">
+      <div class="metric-lang">JavaScript</div>
+      <div class="metric-time" id="m-js">—</div>
+      <div class="metric-unit">esperando...</div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="section-title">// Visualización de rendimiento</div>
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <span class="chart-title" id="chartTitle">Comparación de tiempos · O(n²) · n=1,000</span>
+      <div class="chart-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span>Python</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#818cf8"></span>C++</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#f87171"></span>Java</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#facc15"></span>JS</div>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="mainChart" role="img" aria-label="Gráfico de barras comparando tiempos de ejecución por lenguaje y complejidad algorítmica">Sin datos aún.</canvas>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-title">// Tabla de resultados detallada</div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Lenguaje</th>
+          <th>Complejidad</th>
+          <th>Operaciones</th>
+          <th>Tiempo estimado</th>
+          <th>Rendimiento relativo</th>
+        </tr>
+      </thead>
+      <tbody id="resultsTable">
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;font-family:var(--font-mono)">Ejecuta la simulación para ver resultados</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COMPLEXITY INFO -->
+  <div class="section-title">// Guía de complejidades</div>
+  <div class="complexity-grid">
+    <div class="complexity-card" style="border-color:#6366f1">
+      <h4 style="color:#818cf8">O(n²)</h4>
+      <p>Cuadrática. Típico en algoritmos de ordenamiento simples como Bubble Sort o Selection Sort. El tiempo crece con el cuadrado de la entrada.</p>
+      <span class="growth" style="background:rgba(99,102,241,0.15);color:#818cf8">n=1000 → 10⁶ ops</span>
+    </div>
+    <div class="complexity-card" style="border-color:#22d3ee">
+      <h4 style="color:#22d3ee">O(n log n)</h4>
+      <p>Linealítmica. El estándar de eficiencia para ordenamiento. Algoritmos como Merge Sort, Quick Sort y Heap Sort pertenecen a esta clase.</p>
+      <span class="growth" style="background:rgba(34,211,238,0.15);color:#22d3ee">n=1000 → ~10,000 ops</span>
+    </div>
+    <div class="complexity-card" style="border-color:#f472b6">
+      <h4 style="color:#f472b6">O(n³)</h4>
+      <p>Cúbica. Aparece en multiplicación de matrices naive, Floyd-Warshall y algunos problemas de programación dinámica. Muy costoso para n grande.</p>
+      <span class="growth" style="background:rgba(244,114,182,0.15);color:#f472b6">n=1000 → 10⁹ ops</span>
+    </div>
+    <div class="complexity-card" style="border-color:#fb923c">
+      <h4 style="color:#fb923c">O(2ⁿ)</h4>
+      <p>Exponencial. Problemas NP como la mochila, subset-sum o el viajante. Impracticable para n > 40. Solo viable con entrada muy pequeña.</p>
+      <span class="growth" style="background:rgba(251,146,60,0.15);color:#fb923c">n=40 → 10¹² ops</span>
+    </div>
+  </div>
+
+  <!-- QR SECTION -->
+  <div class="section-title">// Acceso rápido · Código QR</div>
+  <div class="qr-section">
+    <div class="qr-box">
+      <div id="qr-canvas"></div>
+    </div>
+    <div class="qr-info">
+      <h3>Abre AlgoTimer desde cualquier dispositivo</h3>
+      <p>Escanea el código QR con la cámara de tu teléfono para acceder directamente a esta herramienta. También puedes compartir la URL directamente con tu equipo o estudiantes.</p>
+      <div class="url-display" id="urlDisplay">Cargando URL...</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  AlgoTimer · Análisis de Complejidad Algorítmica · Tiempos simulados basados en modelos de rendimiento · 2025
+</footer>
+
+<script>
+// ─── CONSTANTES DE VELOCIDAD (ns por operación) ───
+const SPEEDS = {
+  py:   50,   // Python: ~50ns/op (interpretado)
+  cpp:  1,    // C++:     ~1ns/op  (compilado nativo)
+  java: 4,    // Java:    ~4ns/op  (JIT)
+  js:   5     // JS:      ~5ns/op  (V8 JIT)
+};
+const LANG_COLORS = {
+  py: '#fbbf24', cpp: '#818cf8', java: '#f87171', js: '#facc15'
+};
+const N_VALUES = [100, 500, 1000, 5000, 10000];
+const N_LABELS = ['100', '500', '1,000', '5,000', '10,000'];
+
+let chart = null;
+let lastResults = null;
+
+// ─── SLIDER ───
+const slider = document.getElementById('nSlider');
+const nDisplay = document.getElementById('nDisplay');
+const nSubtext = document.getElementById('nSubtext');
+slider.addEventListener('input', () => {
+  const n = N_VALUES[slider.value - 1];
+  nDisplay.textContent = n.toLocaleString('es');
+  const exp = Math.round(Math.log10(n));
+  nSubtext.textContent = `n = 10^${exp} elementos`;
+});
+
+// ─── CHECKBOXES ───
+document.querySelectorAll('.chk-item').forEach(lbl => {
+  lbl.addEventListener('click', () => {
+    const inp = lbl.querySelector('input');
+    inp.checked = !inp.checked;
+    lbl.classList.toggle('active', inp.checked);
+  });
+});
+
+function getActiveComplexities() {
+  const active = [];
+  document.querySelectorAll('.chk-item').forEach(lbl => {
+    if (lbl.querySelector('input').checked) active.push(lbl.dataset.key);
+  });
+  return active;
+}
+
+// ─── CÁLCULO DE OPERACIONES ───
+function calcOps(n, complexity) {
+  switch(complexity) {
+    case 'n2':   return n * n;
+    case 'nlogn': return n * Math.log2(n);
+    case 'n3':   return n * n * n;
+    case 'two_n': return Math.pow(2, Math.min(n, 63));
+  }
+}
+
+function formatTime(ns) {
+  if (ns < 1000) return { val: ns.toFixed(1), unit: 'ns' };
+  if (ns < 1e6)  return { val: (ns/1e3).toFixed(2), unit: 'μs' };
+  if (ns < 1e9)  return { val: (ns/1e6).toFixed(2), unit: 'ms' };
+  if (ns < 1e12) return { val: (ns/1e9).toFixed(2), unit: 's' };
+  if (ns < 3.15e13) return { val: (ns/6e10).toFixed(1), unit: 'min' };
+  if (ns < 3.15e15) return { val: (ns/3.6e12).toFixed(1), unit: 'h' };
+  return { val: '∞', unit: 'imposible' };
+}
+
+const COMPLEXITY_LABELS = {
+  n2: 'O(n²)', nlogn: 'O(n log n)', n3: 'O(n³)', two_n: 'O(2ⁿ)'
+};
+const COMPLEXITY_COLORS = {
+  n2: '#6366f1', nlogn: '#22d3ee', n3: '#f472b6', two_n: '#fb923c'
+};
+
+// ─── SIMULACIÓN ───
+function runSimulation() {
+  const active = getActiveComplexities();
+  if (!active.length) { alert('Selecciona al menos una complejidad.'); return; }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.querySelector('.btn-inner').innerHTML = '<div class="spinner"></div><span>CALCULANDO...</span>';
+
+  setTimeout(() => {
+    const n = N_VALUES[slider.value - 1];
+    const langs = ['py','cpp','java','js'];
+    const results = {};
+
+    // Calcular para cada combinación
+    active.forEach(comp => {
+      results[comp] = {};
+      langs.forEach(lang => {
+        const ops = calcOps(n, comp);
+        const totalNs = ops * SPEEDS[lang];
+        results[comp][lang] = totalNs;
+      });
+    });
+
+    lastResults = { n, active, results };
+    updateMetrics(n, active, results);
+    updateChart(n, active, results);
+    updateTable(n, active, results);
+
+    btn.disabled = false;
+    btn.querySelector('.btn-inner').innerHTML = '<span>▶ EJECUTAR SIMULACIÓN</span>';
+  }, 600);
+}
+
+function updateMetrics(n, active, results) {
+  const langs = ['py','cpp','java','js'];
+  const langNames = { py:'Python', cpp:'C++', java:'Java', js:'JavaScript' };
+
+  // Usar primera complejidad activa para tarjetas principales
+  const comp = active[0];
+
+  // Rank por velocidad
+  const sorted = langs.slice().sort((a,b) => results[comp][a] - results[comp][b]);
+
+  langs.forEach((lang, i) => {
+    const t = results[comp][lang];
+    const fmt = formatTime(t);
+    const el = document.getElementById(`m-${lang}`);
+    el.textContent = fmt.val;
+    el.nextElementSibling.textContent = fmt.unit;
+
+    const card = el.closest('.metric-card');
+    const rank = sorted.indexOf(lang) + 1;
+    const existing = card.querySelector('.metric-rank');
+    if (existing) existing.remove();
+    const badge = document.createElement('div');
+    badge.className = 'metric-rank' + (rank===1?' first':'');
+    badge.textContent = rank===1?'⚡ +rápido':'#'+rank;
+    card.appendChild(badge);
+  });
+}
+
+function updateChart(n, active, results) {
+  const viewMode = document.getElementById('viewMode').value;
+  const scaleMode = document.getElementById('scaleMode').value;
+  const ctx = document.getElementById('mainChart').getContext('2d');
+
+  if (chart) { chart.destroy(); chart = null; }
+
+  const langs = ['py','cpp','java','js'];
+  const langNames = ['Python','C++','Java','JS'];
+  const langColors = [LANG_COLORS.py, LANG_COLORS.cpp, LANG_COLORS.java, LANG_COLORS.js];
+
+  // Título
+  const label = active.map(k=>COMPLEXITY_LABELS[k]).join(' · ');
+  document.getElementById('chartTitle').textContent = `Comparación · ${label} · n=${n.toLocaleString('es')}`;
+
+  let config;
+
+  if (viewMode === 'bar') {
+    // Agrupar por complejidad, un dataset por lenguaje
+    const datasets = langs.map((lang, li) => ({
+      label: langNames[li],
+      data: active.map(comp => {
+        const ns = results[comp][lang];
+        return scaleMode==='logarithmic' ? Math.log10(Math.max(ns,1)) : ns/1e6;
+      }),
+      backgroundColor: langColors[li] + 'bb',
+      borderColor: langColors[li],
+      borderWidth: 1,
+      borderRadius: 4,
+    }));
+    config = {
+      type: 'bar',
+      data: { labels: active.map(k=>COMPLEXITY_LABELS[k]), datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            type: 'linear',
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#6b6b85', font:{family:'Space Mono',size:11},
+              callback: v => scaleMode==='logarithmic' ? '10^'+v.toFixed(1) : formatTimeShort(v*1e6) }
+          },
+          x: { grid:{color:'rgba(255,255,255,0.03)'}, ticks:{color:'#6b6b85',font:{family:'Space Mono',size:11}} }
+        }
+      }
+    };
+  } else if (viewMode === 'line') {
+    const nRange = [50,100,250,500,1000,2000,5000];
+    const datasets = [];
+    active.forEach(comp => {
+      langs.forEach((lang, li) => {
+        datasets.push({
+          label: `${langNames[li]} ${COMPLEXITY_LABELS[comp]}`,
+          data: nRange.map(ni => {
+            const ops = calcOps(ni, comp);
+            const ns = ops * SPEEDS[lang];
+            return scaleMode==='logarithmic' ? Math.log10(Math.max(ns,1)) : ns/1e6;
+          }),
+          borderColor: COMPLEXITY_COLORS[comp],
+          backgroundColor: 'transparent',
+          borderWidth: lang==='cpp' ? 2.5 : 1.5,
+          borderDash: li===0?[]:[li*4,4],
+          pointRadius: 2, tension: 0.3,
+        });
+      });
+    });
+    config = {
+      type: 'line',
+      data: { labels: nRange.map(v=>v.toLocaleString('es')), datasets },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b6b85',font:{family:'Space Mono',size:11},callback:v=>scaleMode==='logarithmic'?'10^'+v.toFixed(1):formatTimeShort(v*1e6)}},
+          x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#6b6b85',font:{family:'Space Mono',size:11}}}
+        }
+      }
+    };
+  } else {
+    // Radar
+    const comp = active[0];
+    const maxVal = Math.max(...langs.map(l=>results[comp][l]));
+    const datasets = [{
+      label: COMPLEXITY_LABELS[comp],
+      data: langs.map(l => (results[comp][l]/maxVal)*100),
+      backgroundColor: 'rgba(99,102,241,0.2)',
+      borderColor: '#6366f1',
+      borderWidth: 2,
+      pointBackgroundColor: langColors,
+      pointRadius: 5,
+    }];
+    config = {
+      type: 'radar',
+      data: { labels: langNames, datasets },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{r:{
+          grid:{color:'rgba(255,255,255,0.07)'},
+          pointLabels:{color:'#e8e8f0',font:{family:'Space Mono',size:12}},
+          ticks:{display:false},
+          angleLines:{color:'rgba(255,255,255,0.05)'},
+        }}
+      }
+    };
+  }
+
+  chart = new Chart(ctx, config);
+}
+
+function formatTimeShort(ns) {
+  const f = formatTime(ns);
+  return f.val + f.unit;
+}
+
+function updateTable(n, active, results) {
+  const langs = ['py','cpp','java','js'];
+  const langNames = {py:'Python', cpp:'C++', java:'Java', js:'JavaScript'};
+  const langColors = LANG_COLORS;
+
+  const rows = [];
+  active.forEach(comp => {
+    const vals = langs.map(l => results[comp][l]);
+    const maxVal = Math.max(...vals);
+    langs.forEach(lang => {
+      const ns = results[comp][lang];
+      const ops = calcOps(n, comp);
+      const fmt = formatTime(ns);
+      const pct = (ns/maxVal*100).toFixed(0);
+      rows.push({ comp, lang, ops, fmt, pct, ns });
+    });
+  });
+
+  rows.sort((a,b) => a.ns - b.ns);
+
+  const tbody = document.getElementById('resultsTable');
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><span class="td-lang" style="color:${langColors[r.lang]}">${r.lang==='cpp'?'C++':{py:'Python',java:'Java',js:'JavaScript'}[r.lang]}</span></td>
+      <td><span class="td-mono" style="color:${COMPLEXITY_COLORS[r.comp]}">${COMPLEXITY_LABELS[r.comp]}</span></td>
+      <td><span class="td-mono" style="color:var(--muted)">${r.ops.toLocaleString('es')}</span></td>
+      <td><span class="td-mono" style="color:var(--text)">${r.fmt.val} <span style="color:var(--muted)">${r.fmt.unit}</span></span></td>
+      <td>
+        <div class="bar-cell">
+          <div class="bar-bg">
+            <div class="bar-fill" style="width:${r.pct}%;background:${COMPLEXITY_COLORS[r.comp]}"></div>
+          </div>
+          <span class="td-mono" style="font-size:11px;color:var(--muted);min-width:34px">${r.pct}%</span>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ─── ACTUALIZAR SELECT ───
+document.getElementById('viewMode').addEventListener('change', () => {
+  if (lastResults) updateChart(lastResults.n, lastResults.active, lastResults.results);
+});
+document.getElementById('scaleMode').addEventListener('change', () => {
+  if (lastResults) updateChart(lastResults.n, lastResults.active, lastResults.results);
+});
+
+// ─── QR CODE ───
+function initQR() {
+  const url = window.location.href;
+  document.getElementById('urlDisplay').textContent = url;
+  const container = document.getElementById('qr-canvas');
+  try {
+    new QRCode(container, {
+      text: url,
+      width: 132, height: 132,
+      colorDark: '#1a1a2e',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    container.textContent = 'Error al generar QR';
+  }
+}
+
+window.addEventListener('load', () => {
+  initQR();
+  // Ejecutar simulación inicial
+  setTimeout(runSimulation, 300);
+});
+</script>
+</body>
+</html>
